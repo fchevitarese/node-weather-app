@@ -15,7 +15,11 @@ const geocodeUrl =  `${config.geocodeUrl}${encodedAddress}`
 const api_key = config.darksky_api_key;
 
 axios.get(geocodeUrl)
-    .then( response => {
+    .then( res => geoCodeResult(res))
+    .then(res => dataResult(res))
+    .catch(err => dataError(err))
+
+    function geoCodeResult(response) {
 
         if (response.data.status === 'ZERO_RESULTS') throw new Error('Unable to find that address.')
 
@@ -25,14 +29,16 @@ axios.get(geocodeUrl)
         console.log(response.data.results[0].formatted_address);
 
         return axios.get(weatherUrl);
-    })
-    .then( response => {
+    }
+
+    function dataResult(response) {
         let temperature = convertToCelcius(response.data.currently.temperature);
         let apparentTemperature = convertToCelcius(response.data.currently.apparentTemperature);
         console.log(`It's currently ${temperature}. It feels like ${apparentTemperature}.`)
-    })
-    .catch( err => {
+    }
+
+    function dataError(err) {
         err.code === 'ENOTFOUND'
             ? console.log('Unable to connect to API servers')
             : console.log(err.message);
-    })
+    }
